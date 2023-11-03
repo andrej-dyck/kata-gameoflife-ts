@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'vitest'
-import { Board, simulate } from './game-of-life.ts'
+import { simulate } from './game-of-life.ts'
 import { take } from './ts-sequences.ts'
 import { conwaysOriginalRule } from './evolution-rule.ts'
+import { Board, Coordinate, infinite2dBoard } from './board.ts'
 
 const conwaysGameOfLife = (seed: Board) => simulate(conwaysOriginalRule, seed)
 
@@ -73,10 +74,30 @@ describe('still-life', () => {
 })
 
 const expectBoardSequence = (seed: Board, ...boards: readonly Board[]) =>
-  expect(take(conwaysGameOfLife(seed), boards.length + 1)).toEqual([seed, ...boards])
+  expect(
+    take(conwaysGameOfLife(seed), boards.length + 1).map(omitFunctions)
+  ).toEqual(
+    [seed, ...boards].map(omitFunctions)
+  )
 
 const expectNotChanging = (seed: Board) =>
   expectBoardSequence(seed, seed, seed)
 
-const testBoard = (...rows: string[]): Board =>
-  rows
+const testBoard = (...rows: string[]): Board => infinite2dBoard({
+  livingCells: new Set(
+    rows.flatMap((row, rowIndex) =>
+      [...row].map((c, colIndex) => [c, colIndex] as const)
+        .filter(([c]) => c === '#')
+        .map(([c, colIndex]) => ({ x: rowIndex, y: colIndex } satisfies Coordinate))
+    )
+  )
+})
+
+const omitFunctions = <T extends Record<PropertyKey, unknown>>(obj: T): Partial<T> => {
+  const copy = { ...obj }
+  for (const k of Object.keys(obj)) {
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    if(typeof copy[k] === 'function') delete copy[k]
+  }
+  return copy
+}

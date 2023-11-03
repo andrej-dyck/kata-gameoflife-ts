@@ -1,3 +1,11 @@
+export function* generateSequence<T>(seed: T, next: (c: T) => T | undefined): Generator<T> {
+  let n: T | undefined = seed
+  while (!!n) {
+    yield n
+    n = next(n)
+  }
+}
+
 export const take = <T>(sequence: Iterable<T>, n: number): readonly T[] => {
   const result: T[] = []
   let i = 0
