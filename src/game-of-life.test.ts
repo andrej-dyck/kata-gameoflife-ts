@@ -1,14 +1,15 @@
 import { describe, expect, test } from 'vitest'
 import { simulate } from './game-of-life.ts'
-import { take } from './ts-sequences.ts'
 import { conwaysOriginalRule } from './evolution-rule.ts'
-import { Board, Coordinate, infinite2dBoard } from './board.ts'
+import { Board, coordinate, infinite2dBoard } from './board.ts'
+import { Set } from 'immutable'
+import { omitFunctions, take } from './ts-extensions.ts'
 
 const conwaysGameOfLife = (seed: Board) => simulate(conwaysOriginalRule, seed)
 
 describe('oscillating patterns', () => {
 
-  test.skip('blinker', () => {
+  test('blinker', () => {
     const seed = testBoard(
       '..#..',
       '..#..',
@@ -20,6 +21,125 @@ describe('oscillating patterns', () => {
         '.....',
         '.###.',
         '.....',
+      ),
+      seed
+    )
+  })
+  test('clock', () => {
+    const seed = testBoard(
+      '...#..',
+      '.##...',
+      '...##.',
+      '..#...',
+    )
+    expectBoardSequence(
+      seed,
+      testBoard(
+        '..#...',
+        '..#.#.',
+        '.#.#..',
+        '...#..',
+      ),
+      seed
+    )
+  })
+  test('glider', () => {
+    const seed = testBoard(
+      '..#....',
+      '...#...',
+      '.###...',
+      '.......',
+    )
+    expectBoardSequence(
+      seed,
+      testBoard(
+        '.......',
+        '.#.#...',
+        '..##...',
+        '..#....',
+      ),
+      testBoard(
+        '.......',
+        '...#...',
+        '.#.#...',
+        '..##...',
+      ),
+      testBoard(
+        '.......',
+        '..#....',
+        '...##..',
+        '..##...',
+      ),
+      testBoard(
+        '.......',
+        '...#...',
+        '....#..',
+        '..###..',
+      )
+    )
+  })
+  test('pulsar', () => {
+    const seed = testBoard(
+      '.................',
+      '.................',
+      '....###...###....',
+      '.................',
+      '..#....#.#....#..',
+      '..#....#.#....#..',
+      '..#....#.#....#..',
+      '....###...###....',
+      '.................',
+      '....###...###....',
+      '..#....#.#....#..',
+      '..#....#.#....#..',
+      '..#....#.#....#..',
+      '.................',
+      '....###...###....',
+      '.................',
+      '.................',
+      '.................',
+    )
+    expectBoardSequence(
+      seed,
+      testBoard(
+        '.................',
+        '.....#.....#.....',
+        '.....#.....#.....',
+        '.....##...##.....',
+        '.................',
+        '.###..##.##..###.',
+        '...#.#.#.#.#.#...',
+        '.....##...##.....',
+        '.................',
+        '.....##...##.....',
+        '...#.#.#.#.#.#...',
+        '.###..##.##..###.',
+        '.................',
+        '.....##...##.....',
+        '.....#.....#.....',
+        '.....#.....#.....',
+        '.................',
+        '.................',
+      ),
+      testBoard(
+        '.................',
+        '.................',
+        '....##.....##....',
+        '.....##...##.....',
+        '..#..#.#.#.#..#..',
+        '..###.##.##.###..',
+        '...#.#.#.#.#.#...',
+        '....###...###....',
+        '.................',
+        '....###...###....',
+        '...#.#.#.#.#.#...',
+        '..###.##.##.###..',
+        '..#..#.#.#.#..#..',
+        '.....##...##.....',
+        '....##.....##....',
+        '.................',
+        '.................',
+        '.................',
       ),
       seed
     )
@@ -84,20 +204,11 @@ const expectNotChanging = (seed: Board) =>
   expectBoardSequence(seed, seed, seed)
 
 const testBoard = (...rows: string[]): Board => infinite2dBoard({
-  livingCells: new Set(
+  livingCells: Set(
     rows.flatMap((row, rowIndex) =>
       [...row].map((c, colIndex) => [c, colIndex] as const)
         .filter(([c]) => c === '#')
-        .map(([c, colIndex]) => ({ x: rowIndex, y: colIndex } satisfies Coordinate))
+        .map(([c, colIndex]) => coordinate({ x: rowIndex, y: colIndex }))
     )
   )
 })
-
-const omitFunctions = <T extends Record<PropertyKey, unknown>>(obj: T): Partial<T> => {
-  const copy = { ...obj }
-  for (const k of Object.keys(obj)) {
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    if(typeof copy[k] === 'function') delete copy[k]
-  }
-  return copy
-}
