@@ -4,10 +4,27 @@ import { take } from './ts-sequences.ts'
 
 const conwaysGameOfLife = (seed: Board) => simulate(conwaysOriginalRule, seed)
 
-describe('still-life', () => {
+describe('oscillating patterns', () => {
 
-  const expectNotChanging = (board: Board) =>
-    expect(take(conwaysGameOfLife(board), 3)).toEqual([board, board, board])
+  test('blinker', () => {
+    const seed = testBoard(
+      '..#..',
+      '..#..',
+      '..#..',
+    )
+    expectBoardSequence(
+      seed,
+      testBoard(
+        '.....',
+        '.###.',
+        '.....',
+      ),
+      seed
+    )
+  })
+})
+
+describe('still-life', () => {
 
   test('empty board', () => expectNotChanging(
     testBoard(
@@ -53,6 +70,12 @@ describe('still-life', () => {
     )
   ))
 })
+
+const expectBoardSequence = (seed: Board, ...boards: readonly Board[]) =>
+  expect(take(conwaysGameOfLife(seed), boards.length + 1)).toEqual([seed, ...boards])
+
+const expectNotChanging = (seed: Board) =>
+  expectBoardSequence(seed, seed, seed)
 
 const testBoard = (...rows: string[]): Board =>
   rows
