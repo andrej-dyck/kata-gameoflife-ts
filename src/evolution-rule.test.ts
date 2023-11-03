@@ -26,10 +26,10 @@ describe('Conway\'s original rule', () => {
   )
 
   test.each([2, 3])('survives with %d live neighbours', (numberOfLiveNeighbours) =>
-    expect(survives(conwaysOriginalRule)(numberOfLiveNeighbours)).toBe(true)
+    expect(survives(conwaysOriginalRule, numberOfLiveNeighbours)).toBe(true)
   )
 
   test('is born with 3 live neighbours', () =>
-    expect(isBorn(conwaysOriginalRule)(3)).toBe(true)
+    expect(isBorn(conwaysOriginalRule, 3)).toBe(true)
   )
 })

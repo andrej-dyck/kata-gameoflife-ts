@@ -1,27 +1,18 @@
-export function* generateSequence<T>(seed: T, next: (c: T) => T | undefined): Generator<T> {
+export function* generateSequence<T extends NonNullable<unknown>>(seed: T, next: (c: T) => T | undefined): Iterable<T> {
   let n: T | undefined = seed
-  while (!!n) {
+  while (n) {
     yield n
     n = next(n)
   }
 }
 
-export const take = <T>(sequence: Iterable<T>, n: number): readonly T[] => {
-  const result: T[] = []
-  let i = 0
-  for (const item of sequence) {
-    if (i >= n) break
-    result.push(item)
-    i++
+export function memoize<T, R>(f: (arg: T) => R): (arg: T) => R {
+  const values = new Map<T, R>()
+  return (arg) => {
+    if(!values.has(arg)) {
+      values.set(arg, f(arg))
+    }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return values.get(arg)!
   }
-  return result
-}
-
-export const omitFunctions = <T extends Record<PropertyKey, unknown>>(obj: T): Partial<T> => {
-  const copy = { ...obj }
-  for (const k of Object.keys(obj)) {
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    if (typeof copy[k] === 'function') delete copy[k]
-  }
-  return copy
 }

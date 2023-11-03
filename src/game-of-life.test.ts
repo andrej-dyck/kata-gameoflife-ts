@@ -3,7 +3,6 @@ import { simulate } from './game-of-life.ts'
 import { conwaysOriginalRule } from './evolution-rule.ts'
 import { Board, Coordinate, coordinate, infinite2dBoard } from './board.ts'
 import { Set } from 'immutable'
-import { omitFunctions, take } from './ts-extensions.ts'
 
 const conwaysGameOfLife = (seed: Board) => simulate(conwaysOriginalRule, seed)
 
@@ -329,7 +328,7 @@ describe('still-life', () => {
 
 const expectBoardSequence = (seed: Board, ...boards: readonly Board[]) =>
   expect(
-    take(conwaysGameOfLife(seed), boards.length + 1).map(omitFunctions)
+    conwaysGameOfLife(seed).take(boards.length + 1).map(omitFunctions).toArray()
   ).toEqual(
     [seed, ...boards].map(omitFunctions)
   )
@@ -342,9 +341,18 @@ const testBoard = (...rows: string[]): Board => infinite2dBoard({
     rows.flatMap((row, rowIndex) =>
       [...row].map((c, colIndex) => [c, colIndex] as const)
         .filter(([c]) => c === '#')
-        .map(([_, colIndex]) => coordinate({ x: rowIndex, y: colIndex }))
+        .map(([, colIndex]) => coordinate({ x: rowIndex, y: colIndex }))
     )
   )
 })
 
 const emptyBoard = infinite2dBoard({ livingCells: Set<Coordinate>() })
+
+const omitFunctions = <T extends Record<PropertyKey, unknown>>(obj: T): Partial<T> => {
+  const copy = { ...obj }
+  for (const k of Object.keys(obj)) {
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+    if (typeof copy[k] === 'function') delete copy[k]
+  }
+  return copy
+}

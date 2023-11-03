@@ -1,30 +1,30 @@
 import { EvolutionRule, isBorn, survives } from './evolution-rule.ts'
 import { Record, Set } from 'immutable'
+import { memoize } from './ts-extensions.ts'
 
 export type Board = {
   evolve(rule: EvolutionRule): Board
 }
 
-export type Coordinate = { x: number, y: number }
+export type Coordinate = Readonly<{ x: number, y: number }>
 export const coordinate = Record<Coordinate>({ x: 0, y: 0 })
 
 export type Infinite2dBoard = Board & { livingCells: Set<Coordinate> }
 
-export const infinite2dBoard = ({ livingCells }: Pick<Infinite2dBoard, 'livingCells'>): Infinite2dBoard => {
+export const infinite2dBoard = (
+  { livingCells }: Pick<Infinite2dBoard, 'livingCells'>
+): Infinite2dBoard => {
   const liveNeighboursOf = (c: Coordinate) =>
     adjacentCells(c).count(n => livingCells.has(n))
 
-  const survivingCells = (rule: EvolutionRule) => Set(
-    livingCells.filter(c => survives(rule)(liveNeighboursOf(c)))
-  )
+  const survivingCells = (rule: EvolutionRule) =>
+    livingCells.filter(c => survives(rule, liveNeighboursOf(c)))
 
-  const adjacentDeadCells = (cells: Set<Coordinate>) => Set(
-    cells.flatMap(c => adjacentCells(c)).filter(c => !cells.has(c))
-  )
+  const adjacentDeadCells = () =>
+    livingCells.flatMap(c => adjacentCells(c)).subtract(livingCells)
 
-  const bornCells = (rule: EvolutionRule) => Set(
-    adjacentDeadCells(livingCells).filter(c => isBorn(rule)(liveNeighboursOf(c)))
-  )
+  const bornCells = (rule: EvolutionRule) =>
+    adjacentDeadCells().filter(c => isBorn(rule, liveNeighboursOf(c)))
 
   return {
     livingCells,
@@ -34,7 +34,7 @@ export const infinite2dBoard = ({ livingCells }: Pick<Infinite2dBoard, 'livingCe
   }
 }
 
-const adjacentCells = ({ x, y }: Coordinate) => Set<Coordinate>([
+const adjacentCells = memoize(({ x, y }: Coordinate) => Set<Coordinate>([
   coordinate({ x: x - 1, y: y - 1 }),
   coordinate({ x: x - 1, y: y }),
   coordinate({ x: x - 1, y: y + 1 }),
@@ -43,4 +43,5 @@ const adjacentCells = ({ x, y }: Coordinate) => Set<Coordinate>([
   coordinate({ x: x + 1, y: y - 1 }),
   coordinate({ x: x + 1, y: y }),
   coordinate({ x: x + 1, y: y + 1 }),
-])
+]))
+

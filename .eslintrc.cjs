@@ -1,10 +1,8 @@
 module.exports = {
   extends: ['eslint:recommended'],
   rules: {
-    indent: ['warn', 2],
     quotes: ['warn', 'single'],
     semi: ['warn', 'never'],
-    'comma-dangle': ['warn', 'always-multiline'],
     'space-unary-ops': ['warn'],
     'consistent-return': ['warn'],
     'eol-last': ['warn'],
