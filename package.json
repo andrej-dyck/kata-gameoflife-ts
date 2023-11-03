@@ -1,0 +1,23 @@
+{
+  "name": "game-of-life",
+  "description": "Game of Life coding kata with TypeScript",
+  "author": "https://github.com/andrej-dyck",
+  "license": "MIT",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint . --ext .js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path .gitignore --max-warnings 0",
+    "test": "vitest run",
+    "test:watch": "vitest watch"
+  },
+  "devDependencies": {
+    "@types/node": "20.8.10",
+    "@typescript-eslint/eslint-plugin": "6.9.1",
+    "@typescript-eslint/parser": "6.9.1",
+    "eslint": "8.52.0",
+    "typescript": "5.2.2",
+    "vitest": "0.34.6"
+  }
+}
