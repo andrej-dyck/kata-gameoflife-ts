@@ -1,4 +1,9 @@
-export function* generateSequence<T extends NonNullable<unknown>>(seed: T, next: (c: T) => T | undefined): Iterable<T> {
+import { Seq } from 'immutable'
+
+export const generateSeq = <T extends NonNullable<unknown>>(seed: T, next: (c: T) => T | undefined): Seq<number, T> =>
+  Seq(generateSequence(seed, next))
+
+function* generateSequence<T extends NonNullable<unknown>>(seed: T, next: (c: T) => T | undefined): Iterable<T> {
   let n: T | undefined = seed
   while (n) {
     yield n
